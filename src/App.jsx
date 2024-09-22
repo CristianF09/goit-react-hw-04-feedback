@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FeedbackOptions from './components/FeedbackOptions';
 import Statistics from './components/Statistics';
 import Section from './components/Section';
-import styles from './App.module.css'; 
+import Notification from './components/Notification';
+import './App.module.css';
 
 const App = () => {
   const [feedback, setFeedback] = useState({
@@ -10,6 +11,17 @@ const App = () => {
     neutral: 0,
     bad: 0,
   });
+
+  useEffect(() => {
+    const savedFeedback = JSON.parse(localStorage.getItem('feedback'));
+    if (savedFeedback) {
+      setFeedback(savedFeedback);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('feedback', JSON.stringify(feedback));
+  }, [feedback]);
 
   const handleFeedback = (type) => {
     setFeedback((prevFeedback) => ({
@@ -19,21 +31,19 @@ const App = () => {
   };
 
   const countTotalFeedback = () => {
-    const { good, neutral, bad } = feedback;
-    return good + neutral + bad;
+    return feedback.good + feedback.neutral + feedback.bad;
   };
 
   const countPositiveFeedbackPercentage = () => {
     const total = countTotalFeedback();
-    const { good } = feedback;
-    return total > 0 ? Math.round((good / total) * 100) : 0;
+    return total > 0 ? Math.round((feedback.good / total) * 100) : 0;
   };
 
   const total = countTotalFeedback();
   const positivePercentage = countPositiveFeedbackPercentage();
 
   return (
-    <div className={styles.app}>
+    <div className="App">
       <Section title="Please leave feedback">
         <FeedbackOptions
           options={['good', 'neutral', 'bad']}
@@ -50,7 +60,7 @@ const App = () => {
             positivePercentage={positivePercentage}
           />
         ) : (
-          <p className={styles.notification}>There is no feedback</p>
+          <Notification message="There is no feedback yet" />
         )}
       </Section>
     </div>
